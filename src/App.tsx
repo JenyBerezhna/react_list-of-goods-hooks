@@ -15,71 +15,77 @@ export const goodsFromServer: string[] = [
   'Garlic',
 ];
 
-type SortMode = 'alphabet' | 'length' | null;
+export enum SortType {
+  None = 'none',
+  Alphabet = 'alphabet',
+  Length = 'length',
+}
+
 type Direction = 'asc' | 'desc' | null;
+
+const sortAlphabetically = (items: string[], direction: Direction) => {
+  const sorted = [...items].sort((a, b) => a.localeCompare(b));
+
+  return direction === 'desc' ? sorted.reverse() : sorted;
+};
+
+const sortByLength = (items: string[], direction: Direction) => {
+  const sorted = [...items].sort((a, b) => a.length - b.length);
+
+  return direction === 'desc' ? sorted.reverse() : sorted;
+};
+
+const reverseList = (items: string[]) => [...items].reverse();
 
 export const App: React.FC = () => {
   const [goods, setGoods] = useState<string[]>(goodsFromServer);
-  const [sortMode, setSortMode] = useState<SortMode>(null);
+  const [sortMode, setSortMode] = useState<SortType>(SortType.None);
   const [direction, setDirection] = useState<Direction>(null);
   const [reverseActive, setReverseActive] = useState(false);
 
-  const sortAlphabetically = (items: string[], dir: Direction) => {
-    const sorted = [...items].sort((a, b) => a.localeCompare(b));
-
-    return dir === 'desc' ? sorted.reverse() : sorted;
+  const updateGoods = (
+    newGoods: string[],
+    mode: SortType,
+    dir: Direction,
+    reverse: boolean,
+  ) => {
+    setGoods(newGoods);
+    setSortMode(mode);
+    setDirection(dir);
+    setReverseActive(reverse);
   };
-
-  const sortByLength = (items: string[], dir: Direction) => {
-    const sorted = [...items].sort((a, b) => a.length - b.length);
-
-    return dir === 'desc' ? sorted.reverse() : sorted;
-  };
-
-  const reverseList = (items: string[]) => [...items].reverse();
 
   const handleSortAlphabet = () => {
     const sorted = sortAlphabetically(goodsFromServer, 'asc');
 
-    setGoods(sorted);
-    setSortMode('alphabet');
-    setDirection('asc');
-    setReverseActive(false);
+    updateGoods(sorted, SortType.Alphabet, 'asc', false);
   };
 
   const handleSortLength = () => {
     const sorted = sortByLength(goodsFromServer, 'asc');
 
-    setGoods(sorted);
-    setSortMode('length');
-    setDirection('asc');
-    setReverseActive(false);
+    updateGoods(sorted, SortType.Length, 'asc', false);
   };
 
   const handleReverse = () => {
     const reversed = reverseList(goods);
     const newDirection = direction === 'asc' ? 'desc' : 'asc';
 
-    setGoods(reversed);
-    setDirection(newDirection);
-    setReverseActive(true);
+    updateGoods(reversed, sortMode, newDirection, true);
   };
 
   const handleReset = () => {
-    setGoods(goodsFromServer);
-    setSortMode(null);
-    setDirection(null);
-    setReverseActive(false);
+    updateGoods(goodsFromServer, SortType.None, null, false);
   };
 
-  const isActive = (mode: SortMode) => sortMode === mode;
+  const isActive = (mode: SortType) => sortMode === mode;
 
   return (
     <div className="section content">
       <div className="buttons">
         <button
           type="button"
-          className={`button is-info${isActive('alphabet') ? '' : ' is-light'}`}
+          className={`button is-info${isActive(SortType.Alphabet) ? '' : ' is-light'}`}
           onClick={handleSortAlphabet}
           data-cy="sort-alphabet"
         >
@@ -88,7 +94,7 @@ export const App: React.FC = () => {
 
         <button
           type="button"
-          className={`button is-success${isActive('length') ? '' : ' is-light'}`}
+          className={`button is-success${isActive(SortType.Length) ? '' : ' is-light'}`}
           onClick={handleSortLength}
           data-cy="sort-length"
         >
@@ -104,7 +110,7 @@ export const App: React.FC = () => {
           Reverse
         </button>
 
-        {(sortMode || reverseActive) && (
+        {(sortMode !== SortType.None || reverseActive) && (
           <button
             type="button"
             className="button is-danger is-light"
@@ -117,8 +123,8 @@ export const App: React.FC = () => {
       </div>
 
       <ul>
-        {goods.map((item, index) => (
-          <li key={index} data-cy="Good">
+        {goods.map(item => (
+          <li key={item} data-cy="Good">
             {item}
           </li>
         ))}
