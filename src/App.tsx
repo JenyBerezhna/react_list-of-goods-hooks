@@ -56,13 +56,13 @@ export const App: React.FC = () => {
   };
 
   const handleSortAlphabet = () => {
-    const sorted = sortAlphabetically(goodsFromServer, 'asc');
+    const sorted = sortAlphabetically(goods, 'asc');
 
     updateGoods(sorted, SortType.Alphabet, 'asc', false);
   };
 
   const handleSortLength = () => {
-    const sorted = sortByLength(goodsFromServer, 'asc');
+    const sorted = sortByLength(goods, 'asc');
 
     updateGoods(sorted, SortType.Length, 'asc', false);
   };
@@ -71,7 +71,7 @@ export const App: React.FC = () => {
     const reversed = reverseList(goods);
     const newDirection = direction === 'asc' ? 'desc' : 'asc';
 
-    updateGoods(reversed, sortMode, newDirection, true);
+    updateGoods(reversed, sortMode, newDirection, !reverseActive);
   };
 
   const handleReset = () => {
